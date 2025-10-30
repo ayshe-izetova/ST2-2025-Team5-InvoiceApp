@@ -1,32 +1,22 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ST2_2025_Team5_InvoiceApp.Models;
+using ST2_2025_Team5_InvoiceApp.Services;
 
 namespace ST2_2025_Team5_InvoiceApp.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly AppDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(AppDbContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
         {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var invoiceList = _context.Invoices.OrderByDescending(i => i.Id).ToList();
+            return View(invoiceList);
         }
     }
 }

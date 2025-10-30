@@ -1,0 +1,37 @@
+﻿@model List<ST2_2025_Team5_InvoiceApp.Models.Invoice>
+
+<h1 class="text-center mb-3">Invoices</h1>
+<a class="btn btn-primary" asp-page="/Home/Create">New Invoice</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Invoice No</th>
+            <th>Status</th>
+            <th>Client</th>
+            <th>Total Price</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody class="table-group-divider">
+        @foreach (var invoice in Model)
+        {
+            <tr>
+                <td>@invoice.Id</td>
+                <td>@invoice.Number</td>
+                <td>@invoice.Status</td>
+                <td>@invoice.ClientName</td>
+                <td>@(invoice.UnitPrice * invoice.Quantity)</td>
+                <td>@(invoice.IssueDate.HasValue ? invoice.IssueDate.Value.ToString("dd.MM.yyyy") : "")</td>
+                <td>@(invoice.DueDate.HasValue ? invoice.DueDate.Value.ToString("dd.MM.yyyy") : "")</td>
+                <td style="white-space:nowrap">
+					<a class="btn btn-primary btn-sm" asp-page="/Home/Edit" asp-route-id="@invoice.Id">Edit</a>
+                    <a class="btn btn-danger btn-sm" asp-page="/Home/Delete" asp-route-id="@invoice.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
