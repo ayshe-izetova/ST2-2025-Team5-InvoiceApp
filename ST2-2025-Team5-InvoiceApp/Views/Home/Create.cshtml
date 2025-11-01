@@ -91,19 +91,19 @@
 
                 <div class="col-lg-2 col-sm-4">
                     <label class="form-label">Quantity</label>
-                    <input class="form-control" asp-for="Quantity" />
+                    <input class="form-control" asp-for="Quantity" id="quantityInput" oninput="updateTotalPrice()"/>
                     <span asp-validation-for="Quantity" class="text-danger"></span>
                 </div>
 
                 <div class="col-lg-2 col-sm-4">
                     <label class="form-label">Unit Price</label>
-                    <input class="form-control" asp-for="UnitPrice" />
+                    <input class="form-control" asp-for="UnitPrice" id="unitPriceInput" oninput="updateTotalPrice()" />
                     <span asp-validation-for="UnitPrice" class="text-danger"></span>
                 </div>
 
                 <div class="col-lg-2 col-sm-4">
                     <label class="form-label">Total Price</label>
-                    <input class="form-control" value="@(Model != null ? (Model.Quantity * Model.UnitPrice) : 0)" disabled />
+                    <input class="form-control" disabled id="totalPriceInput"/>
                 </div>
             </div>
         </div>
@@ -112,3 +112,19 @@
     <button type="submit" class="btn btn-primary me-2">Submit</button>
     <a class="btn btn-primary" asp-action="Create">New Invoice</a>
 </form>
+
+<script>
+    function updateTotalPrice(){
+		let quantity = document.getElementById("quantityInput").value;
+		let unitPrice = document.getElementById("unitPriceInput").value;
+
+		if(isNan(quantity)|| isNan(unitPrice)){
+			document.getElementById("totalPriceInput").value = "";
+		}else {
+			let totalPrice = quantity*unitPrice;
+			document.getElementById("totalPriceInput").value = totalPrice.toFixed(2);
+        }
+    }
+
+    updateTotalPrice();
+</script>
