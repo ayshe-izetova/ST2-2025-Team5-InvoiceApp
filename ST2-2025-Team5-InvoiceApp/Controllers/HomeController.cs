@@ -87,5 +87,35 @@ namespace ST2_2025_Team5_InvoiceApp.Controllers
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
+
+        // ✅ GET: Home/Delete/5
+        [HttpGet]
+        public IActionResult Delete(int id)
+        {
+            var invoice = _context.Invoices.FirstOrDefault(i => i.Id == id);
+            if (invoice == null)
+            {
+                return RedirectToAction("Index");
+            }
+            return View(invoice);
+        }
+
+        // ✅ POST: Home/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var invoice = _context.Invoices.Find(id);
+            if (invoice == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            _context.Invoices.Remove(invoice);
+            _context.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
     }
 }
+
