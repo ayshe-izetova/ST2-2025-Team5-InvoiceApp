@@ -42,5 +42,50 @@ namespace ST2_2025_Team5_InvoiceApp.Controllers
             // ако има грешки във формата — остава на Create view
             return View(model);
         }
+
+        // 🟡 GET: /Home/Edit/{id}
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var invoice = _context.Invoices.Find(id);
+            if (invoice == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View(invoice);
+        }
+
+        // 🟢 POST: /Home/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Invoice model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var existing = _context.Invoices.Find(model.Id);
+            if (existing == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            existing.Number = model.Number;
+            existing.Status = model.Status;
+            existing.IssueDate = model.IssueDate;
+            existing.DueDate = model.DueDate;
+            existing.Service = model.Service;
+            existing.UnitPrice = model.UnitPrice;
+            existing.Quantity = model.Quantity;
+            existing.ClientName = model.ClientName;
+            existing.Email = model.Email;
+            existing.Phone = model.Phone;
+            existing.Address = model.Address;
+
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
     }
 }

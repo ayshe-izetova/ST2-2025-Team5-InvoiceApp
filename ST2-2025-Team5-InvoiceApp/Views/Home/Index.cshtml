@@ -28,7 +28,7 @@
                 <td>@(invoice.IssueDate.HasValue ? invoice.IssueDate.Value.ToString("dd.MM.yyyy") : "")</td>
                 <td>@(invoice.DueDate.HasValue ? invoice.DueDate.Value.ToString("dd.MM.yyyy") : "")</td>
                 <td style="white-space:nowrap">
-					<a class="btn btn-primary btn-sm" asp-page="/Home/Edit" asp-route-id="@invoice.Id">Edit</a>
+                    <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@invoice.Id">Edit</a>
                     <a class="btn btn-danger btn-sm" asp-page="/Home/Delete" asp-route-id="@invoice.Id">Delete</a>
                 </td>
             </tr>
