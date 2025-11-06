@@ -1,10 +1,14 @@
 ﻿@model List<ST2_2025_Team5_InvoiceApp.Models.Invoice>
 
 <h1 class="text-center mb-3">Invoices</h1>
-<a class="btn btn-primary" asp-action="Create">New Invoice</a>
 
-<table class="table">
-    <thead>
+<div class="d-flex justify-content-between mb-3">
+    <a class="btn btn-primary" asp-action="Create">New Invoice</a>
+    <input type="text" id="searchBox" class="form-control w-25" placeholder="Search by Client or Invoice No...">
+</div>
+
+<table class="table table-hover" id="invoiceTable">
+    <thead class="table-light">
         <tr>
             <th>ID</th>
             <th>Invoice No</th>
@@ -16,7 +20,7 @@
             <th>Action</th>
         </tr>
     </thead>
-    <tbody class="table-group-divider">
+    <tbody class="table-group-divider" id="invoiceBody">
         @foreach (var invoice in Model)
         {
             <tr>
@@ -24,9 +28,18 @@
                 <td>@invoice.Number</td>
                 <td>@invoice.Status</td>
                 <td>@invoice.ClientName</td>
-                <td>@(invoice.UnitPrice * invoice.Quantity)</td>
-                <td>@(invoice.IssueDate.HasValue ? invoice.IssueDate.Value.ToString("dd.MM.yyyy") : "")</td>
-                <td>@(invoice.DueDate.HasValue ? invoice.DueDate.Value.ToString("dd.MM.yyyy") : "")</td>
+                <td>
+                    @if (invoice.Items != null && invoice.Items.Any())
+                    {
+                        @(invoice.Items.Sum(i => i.UnitPrice * i.Quantity).ToString("0.00"))
+                    }
+                    else
+                    {
+                        @("0.00")
+                    }
+                </td>
+                <td>@(invoice.IssueDate?.ToString("dd.MM.yyyy"))</td>
+                <td>@(invoice.DueDate?.ToString("dd.MM.yyyy"))</td>
                 <td style="white-space:nowrap">
                     <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@invoice.Id">Edit</a>
                     <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@invoice.Id">Delete</a>

@@ -1,13 +1,11 @@
 ﻿namespace ST2_2025_Team5_InvoiceApp.Services
 {
     // Design Pattern: Singleton
-    // Ensures there is only one shared instance of LogService in the entire application.
+    // This service is registered as a singleton in Program.cs
+    // but must have a public constructor so the DI system can instantiate it.
     public class LogService
     {
-        private static LogService? _instance;
-        public static LogService Instance => _instance ??= new LogService();
-
-        private LogService() { }
+        public LogService() { } // ✅ публичен конструктор
 
         public void Log(string message)
         {
