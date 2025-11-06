@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using ST2_2025_Team5_InvoiceApp.Services;
 using ST2_2025_Team5_InvoiceApp.Models;
+using Org.BouncyCastle.Tls;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,9 +27,9 @@ builder.Services.AddScoped<InvoiceDAO>();
 builder.Services.AddScoped<InvoiceFacade>();
 builder.Services.AddSingleton<LogService>();
 
-// Optional: LLM intelligent search integration
-//builder.Services.Configure<LlmOptions>(builder.Configuration.GetSection("Llm"));
-//builder.Services.AddHttpClient<LlmClient>();
+
+builder.Services.AddControllersWithViews();
+
 
 var app = builder.Build();
 
