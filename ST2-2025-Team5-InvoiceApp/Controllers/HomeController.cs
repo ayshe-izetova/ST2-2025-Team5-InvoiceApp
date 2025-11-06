@@ -4,54 +4,48 @@ using ST2_2025_Team5_InvoiceApp.Services;
 
 namespace ST2_2025_Team5_InvoiceApp.Controllers
 {
+    // Design Pattern: MVC Controller (Presentation Layer)
+    // This class handles user requests and delegates data operations
+    // to the InvoiceFacade (which internally uses DAO and Singleton Logger).
     public class HomeController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly InvoiceFacade _facade;
 
-        public HomeController(AppDbContext context)
+        public HomeController(InvoiceFacade facade)
         {
-            _context = context;
+            _facade = facade;
         }
 
         // 📄 Списък с всички фактури
         public IActionResult Index()
         {
-            var invoiceList = _context.Invoices.OrderByDescending(i => i.Id).ToList();
-            return View(invoiceList);
+            var invoices = _facade.GetAllInvoices();
+            return View(invoices);
         }
 
         // 🟩 GET: /Home/Create
         [HttpGet]
-        public IActionResult Create()
-        {
-            return View(new Invoice());
-        }
+        public IActionResult Create() => View(new Invoice());
 
         // 🟦 POST: /Home/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Invoice model)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Invoices.Add(model);
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index)); // връща се към списъка след запис
-            }
+            if (!ModelState.IsValid)
+                return View(model);
 
-            // ако има грешки във формата — остава на Create view
-            return View(model);
+            _facade.CreateInvoice(model);
+            return RedirectToAction(nameof(Index));
         }
 
         // 🟡 GET: /Home/Edit/{id}
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var invoice = _context.Invoices.Find(id);
+            var invoice = _facade.GetInvoice(id);
             if (invoice == null)
-            {
-                return RedirectToAction("Index");
-            }
+                return RedirectToAction(nameof(Index));
 
             return View(invoice);
         }
@@ -62,60 +56,30 @@ namespace ST2_2025_Team5_InvoiceApp.Controllers
         public IActionResult Edit(Invoice model)
         {
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
-            var existing = _context.Invoices.Find(model.Id);
-            if (existing == null)
-            {
-                return RedirectToAction("Index");
-            }
-
-            existing.Number = model.Number;
-            existing.Status = model.Status;
-            existing.IssueDate = model.IssueDate;
-            existing.DueDate = model.DueDate;
-            existing.Service = model.Service;
-            existing.UnitPrice = model.UnitPrice;
-            existing.Quantity = model.Quantity;
-            existing.ClientName = model.ClientName;
-            existing.Email = model.Email;
-            existing.Phone = model.Phone;
-            existing.Address = model.Address;
-
-            _context.SaveChanges();
-            return RedirectToAction("Index");
+            _facade.UpdateInvoice(model);
+            return RedirectToAction(nameof(Index));
         }
 
-        // ✅ GET: Home/Delete/5
+        // 🗑 GET: /Home/Delete/{id}
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            var invoice = _context.Invoices.FirstOrDefault(i => i.Id == id);
+            var invoice = _facade.GetInvoice(id);
             if (invoice == null)
-            {
-                return RedirectToAction("Index");
-            }
+                return RedirectToAction(nameof(Index));
+
             return View(invoice);
         }
 
-        // ✅ POST: Home/Delete/5
+        // 🗑 POST: /Home/Delete/{id}
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var invoice = _context.Invoices.Find(id);
-            if (invoice == null)
-            {
-                return RedirectToAction("Index");
-            }
-
-            _context.Invoices.Remove(invoice);
-            _context.SaveChanges();
-
-            return RedirectToAction("Index");
+            _facade.DeleteInvoice(id);
+            return RedirectToAction(nameof(Index));
         }
     }
 }
-
