@@ -17,36 +17,51 @@ namespace ST2_2025_Team5_InvoiceApp.Controllers
         // 📄 Списък с всички фактури
         public IActionResult Index()
         {
-            var invoices = _context.Invoices
+            var invoiceList = _context.Invoices
                 .Include(i => i.Items)
                 .OrderByDescending(i => i.Id)
                 .ToList();
 
-            return View(invoices);
+            return View(invoiceList);
         }
 
-        // 🟢 GET: /Home/Create
+        // 🟩 GET: /Home/Create
         [HttpGet]
         public IActionResult Create()
         {
             return View(new Invoice());
         }
 
-        // 🟩 POST: /Home/Create
+        // 🟦 POST: /Home/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Invoice model)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Invoices.Add(model);
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(model);
+            // Защита от празни редове и null списъци
+            model.Items ??= new List<InvoiceItems>();
+
+            model.Items = model.Items
+                .Where(it => !string.IsNullOrWhiteSpace(it.Description)
+                             && it.Quantity > 0
+                             && it.UnitPrice >= 0)
+                .ToList();
+
+            if (string.IsNullOrWhiteSpace(model.ClientName))
+                ModelState.AddModelError("ClientName", "Client name is required.");
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            foreach (var item in model.Items)
+                item.Invoice = model;
+
+            _context.Invoices.Add(model);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // ✏️ GET: /Home/Edit/{id}
+        // 🟡 GET: /Home/Edit/{id}
         [HttpGet]
         public IActionResult Edit(int id)
         {
@@ -55,12 +70,12 @@ namespace ST2_2025_Team5_InvoiceApp.Controllers
                 .FirstOrDefault(i => i.Id == id);
 
             if (invoice == null)
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
 
             return View(invoice);
         }
 
-        // 💾 POST: /Home/Edit
+        // 🟢 POST: /Home/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(Invoice model)
@@ -73,25 +88,33 @@ namespace ST2_2025_Team5_InvoiceApp.Controllers
                 .FirstOrDefault(i => i.Id == model.Id);
 
             if (existing == null)
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
 
-            // Обновяване на основните данни
-            _context.Entry(existing).CurrentValues.SetValues(model);
+            // Обновяваме основните полета
+            existing.Number = model.Number;
+            existing.Status = model.Status;
+            existing.IssueDate = model.IssueDate;
+            existing.DueDate = model.DueDate;
 
-            // Изчистване на старите елементи
+            // ✅ Обновяваме вградените клиентски данни
+            existing.ClientName = model.ClientName;
+            existing.ClientEmail = model.ClientEmail;
+            existing.ClientPhone = model.ClientPhone;
+            existing.ClientAddress = model.ClientAddress;
+
+            // Обновяваме артикулите (по-просто: изтриваме и добавяме)
             _context.InvoiceItems.RemoveRange(existing.Items);
-
-            // Добавяне на новите
             foreach (var item in model.Items)
             {
-                existing.Items.Add(item);
+                item.InvoiceId = existing.Id;
+                _context.InvoiceItems.Add(item);
             }
 
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
 
-        // 🗑️ GET: Home/Delete/{id}
+        // 🗑️ GET: /Home/Delete/{id}
         [HttpGet]
         public IActionResult Delete(int id)
         {
@@ -105,7 +128,7 @@ namespace ST2_2025_Team5_InvoiceApp.Controllers
             return View(invoice);
         }
 
-        // 🗑️ POST: Home/Delete/{id}
+        // 🗑️ POST: /Home/Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
@@ -114,12 +137,12 @@ namespace ST2_2025_Team5_InvoiceApp.Controllers
                 .Include(i => i.Items)
                 .FirstOrDefault(i => i.Id == id);
 
-            if (invoice == null)
-                return RedirectToAction(nameof(Index));
-
-            _context.InvoiceItems.RemoveRange(invoice.Items);
-            _context.Invoices.Remove(invoice);
-            _context.SaveChanges();
+            if (invoice != null)
+            {
+                _context.InvoiceItems.RemoveRange(invoice.Items);
+                _context.Invoices.Remove(invoice);
+                _context.SaveChanges();
+            }
 
             return RedirectToAction(nameof(Index));
         }

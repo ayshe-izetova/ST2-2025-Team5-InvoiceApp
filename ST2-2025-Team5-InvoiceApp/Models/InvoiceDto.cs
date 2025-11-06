@@ -21,12 +21,12 @@ namespace ST2_2025_Team5_InvoiceApp.Models
         public int Quantity { get; set; }
 
         //client details
-        [Required(ErrorMessage ="Client Name is required")]
-        public string ClientName { get; set; } = "";
-        [Required, EmailAddress(ErrorMessage = "Invalid Email Address")]
-        public string Email { get; set; } = "";
-        [Phone]
-        public string Phone { get; set; } = "";
-        public string Address { get; set; } = "";
+       // [Required(ErrorMessage ="Client Name is required")]
+       // public string ClientName { get; set; } = "";
+       // [Required, EmailAddress(ErrorMessage = "Invalid Email Address")]
+       // public string Email { get; set; } = "";
+       // [Phone]
+       // public string Phone { get; set; } = "";
+       // public string Address { get; set; } = "";
     }
 }

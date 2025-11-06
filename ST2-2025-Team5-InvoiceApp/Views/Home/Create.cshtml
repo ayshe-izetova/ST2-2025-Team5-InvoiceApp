@@ -1,9 +1,17 @@
 ﻿@model ST2_2025_Team5_InvoiceApp.Models.Invoice
+@{
+    ViewData["Title"] = "Create Invoice";
+}
 
-<h2 class="text-center mb-3">New Invoice</h2>
+<h2 class="text-center mb-4">New Invoice</h2>
 
-<form asp-action="Create" method="post">
+<form asp-action="Create" method="post" id="invoiceForm">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
     <div class="row g-3 mb-3">
+
+        <!-- 🧾 Invoice Details -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">Invoice Details</div>
@@ -13,6 +21,7 @@
                         <input class="form-control" asp-for="Number" />
                         <span asp-validation-for="Number" class="text-danger"></span>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Status</label>
                         <select class="form-select" asp-for="Status">
@@ -20,10 +29,12 @@
                             <option value="Paid">Paid</option>
                         </select>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Issue Date</label>
                         <input type="date" class="form-control" asp-for="IssueDate" />
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Due Date</label>
                         <input type="date" class="form-control" asp-for="DueDate" />
@@ -32,111 +43,116 @@
             </div>
         </div>
 
+        <!-- 👤 Client Info -->
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header">Client Details</div>
+                <div class="card-header">Client Information</div>
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label">Client Name</label>
-                        <input class="form-control" asp-for="ClientName" />
+                        <input class="form-control" asp-for="ClientName" placeholder="Enter client name" />
+                        <span asp-validation-for="ClientName" class="text-danger"></span>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input type="email" class="form-control" asp-for="Email" />
+                        <input class="form-control" asp-for="ClientEmail" placeholder="client@example.com" />
+                        <span asp-validation-for="ClientEmail" class="text-danger"></span>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Phone</label>
-                        <input class="form-control" asp-for="Phone" />
+                        <input class="form-control" asp-for="ClientPhone" placeholder="+359 ..." />
+                        <span asp-validation-for="ClientPhone" class="text-danger"></span>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Address</label>
-                        <input class="form-control" asp-for="Address" />
+                        <input class="form-control" asp-for="ClientAddress" placeholder="Client address" />
+                        <span asp-validation-for="ClientAddress" class="text-danger"></span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 🧮 Invoice Items -->
     <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Service Details</span>
-            <button type="button" class="btn btn-sm btn-success" id="addItem">+ Add Item</button>
+        <div class="card-header">Services / Items</div>
+        <div class="card-body" id="itemsContainer">
+            <div class="row g-2 mb-2 invoice-item">
+                <div class="col-lg-5">
+                    <input name="Items[0].Description" class="form-control" placeholder="Service description" />
+                </div>
+                <div class="col-lg-2">
+                    <input name="Items[0].Quantity" class="form-control qty" placeholder="Qty" type="number" min="1" />
+                </div>
+                <div class="col-lg-2">
+                    <input name="Items[0].UnitPrice" class="form-control price" placeholder="Unit Price" type="number" step="0.01" min="0" />
+                </div>
+                <div class="col-lg-2">
+                    <input class="form-control total" placeholder="Total" disabled />
+                </div>
+                <div class="col-lg-1">
+                    <button type="button" class="btn btn-danger remove-item">Remove</button>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <table class="table table-bordered" id="itemsTable">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Unit Price</th>
-                        <th>Quantity</th>
-                        <th>Total</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="itemsBody">
-                    <tr>
-                        <td><input name="Items[0].Description" class="form-control" /></td>
-                        <td><input name="Items[0].UnitPrice" type="number" step="0.01" class="form-control price" /></td>
-                        <td><input name="Items[0].Quantity" type="number" class="form-control qty" /></td>
-                        <td class="item-total">0.00</td>
-                        <td><button type="button" class="btn btn-danger btn-sm remove-item">X</button></td>
-                    </tr>
-                </tbody>
-            </table>
+
+        <div class="card-footer text-end">
+            <button type="button" id="addItemBtn" class="btn btn-outline-primary">+ Add Service</button>
         </div>
     </div>
 
-    <div class="text-end mb-3">
-        <h4>Total: <span id="grandTotal">0.00</span> лв</h4>
+    <div class="text-end">
+        <button type="submit" class="btn btn-success">Save Invoice</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
     </div>
-
-    <button type="submit" class="btn btn-primary">Save Invoice</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>
 
-<script>
-    let itemIndex = 1;
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 
-    // добавяне на нов ред
-    document.getElementById("addItem").addEventListener("click", function () {
-        const tbody = document.getElementById("itemsBody");
-        const newRow = document.createElement("tr");
-        newRow.innerHTML = `
-            <td><input name="Items[${itemIndex}].Description" class="form-control" /></td>
-            <td><input name="Items[${itemIndex}].UnitPrice" type="number" step="0.01" class="form-control price" /></td>
-            <td><input name="Items[${itemIndex}].Quantity" type="number" class="form-control qty" /></td>
-            <td class="item-total">0.00</td>
-            <td><button type="button" class="btn btn-danger btn-sm remove-item">X</button></td>
-        `;
-        tbody.appendChild(newRow);
-        itemIndex++;
-    });
+    <script>
+        let itemIndex = 1;
+        const container = document.getElementById("itemsContainer");
 
-    // изчисляване на сумите
-    document.addEventListener("input", function (e) {
-        if (e.target.classList.contains("price") || e.target.classList.contains("qty")) {
-            const row = e.target.closest("tr");
-            const price = parseFloat(row.querySelector(".price").value) || 0;
-            const qty = parseInt(row.querySelector(".qty").value) || 0;
-            const total = price * qty;
-            row.querySelector(".item-total").textContent = total.toFixed(2);
-            updateGrandTotal();
-        }
-    });
-
-    // премахване на ред
-    document.addEventListener("click", function (e) {
-        if (e.target.classList.contains("remove-item")) {
-            e.target.closest("tr").remove();
-            updateGrandTotal();
-        }
-    });
-
-    function updateGrandTotal() {
-        let total = 0;
-        document.querySelectorAll(".item-total").forEach(cell => {
-            total += parseFloat(cell.textContent) || 0;
+        document.getElementById("addItemBtn").addEventListener("click", () => {
+            const html = `
+            <div class="row g-2 mb-2 invoice-item">
+                <div class="col-lg-5">
+                    <input name="Items[${itemIndex}].Description" class="form-control" placeholder="Service description" />
+                </div>
+                <div class="col-lg-2">
+                    <input name="Items[${itemIndex}].Quantity" class="form-control qty" placeholder="Qty" type="number" min="1" />
+                </div>
+                <div class="col-lg-2">
+                    <input name="Items[${itemIndex}].UnitPrice" class="form-control price" placeholder="Unit Price" type="number" step="0.01" min="0" />
+                </div>
+                <div class="col-lg-2">
+                    <input class="form-control total" placeholder="Total" disabled />
+                </div>
+                <div class="col-lg-1">
+                    <button type="button" class="btn btn-danger remove-item">Remove</button>
+                </div>
+            </div>`;
+            container.insertAdjacentHTML("beforeend", html);
+            itemIndex++;
         });
-        document.getElementById("grandTotal").textContent = total.toFixed(2);
-    }
-</script>
+
+        container.addEventListener("click", e => {
+            if (e.target.classList.contains("remove-item")) {
+                e.target.closest(".invoice-item").remove();
+            }
+        });
+
+        container.addEventListener("input", e => {
+            if (e.target.classList.contains("price") || e.target.classList.contains("qty")) {
+                const row = e.target.closest('.invoice-item');
+                const qty = parseFloat(row.querySelector('.qty').value) || 0;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                row.querySelector('.total').value = (qty * price).toFixed(2);
+            }
+        });
+    </script>
+}

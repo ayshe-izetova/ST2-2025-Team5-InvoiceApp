@@ -40,11 +40,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseRouting();
-app.UseStatusCodePages();
-app.UseAuthorization();
 
-app.MapStaticAssets();
+app.UseRouting();
+
+app.UseStatusCodePages();
+
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

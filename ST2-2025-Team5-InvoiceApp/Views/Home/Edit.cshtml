@@ -3,9 +3,11 @@
 <h2 class="text-center mb-3">Edit Invoice</h2>
 
 <form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
 
     <div class="row g-3 mb-3">
+        <!-- 🧾 Invoice Details -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">Invoice Details</div>
@@ -18,8 +20,8 @@
                     <div class="mb-3">
                         <label class="form-label">Status</label>
                         <select class="form-select" asp-for="Status">
-                            <option value="Pending" selected="@Model.Status == " Pending"">Pending</option>
-                            <option value="Paid" selected="@Model.Status == " Paid"">Paid</option>
+                            <option value="Pending" selected="@((Model.Status ?? "") == "Pending")">Pending</option>
+                            <option value="Paid" selected="@((Model.Status ?? "") == "Paid")">Paid</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -34,31 +36,37 @@
             </div>
         </div>
 
+        <!-- 👤 Client Info -->
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">Client Details</div>
+            <div class="card h-100">
+                <div class="card-header">Client Information</div>
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label">Client Name</label>
                         <input class="form-control" asp-for="ClientName" />
+                        <span asp-validation-for="ClientName" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input type="email" class="form-control" asp-for="Email" />
+                        <input class="form-control" asp-for="ClientEmail" />
+                        <span asp-validation-for="ClientEmail" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Phone</label>
-                        <input class="form-control" asp-for="Phone" />
+                        <input class="form-control" asp-for="ClientPhone" />
+                        <span asp-validation-for="ClientPhone" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Address</label>
-                        <input class="form-control" asp-for="Address" />
+                        <input class="form-control" asp-for="ClientAddress" />
+                        <span asp-validation-for="ClientAddress" class="text-danger"></span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 🧮 Items -->
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Service Details</span>
@@ -100,50 +108,55 @@
         <h4>Total: <span id="grandTotal">@Model.TotalPrice.ToString("0.00")</span> лв</h4>
     </div>
 
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <div class="text-end">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
 </form>
 
-<script>
-    let itemIndex = @Model.Items?.Count() ?? 0;
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let itemIndex = @Model.Items?.Count() ?? 0;
 
-    document.getElementById("addItem").addEventListener("click", function () {
-        const tbody = document.getElementById("itemsBody");
-        const newRow = document.createElement("tr");
-        newRow.innerHTML = `
-            <td><input name="Items[${itemIndex}].Description" class="form-control" /></td>
-            <td><input name="Items[${itemIndex}].UnitPrice" type="number" step="0.01" class="form-control price" /></td>
-            <td><input name="Items[${itemIndex}].Quantity" type="number" class="form-control qty" /></td>
-            <td class="item-total">0.00</td>
-            <td><button type="button" class="btn btn-danger btn-sm remove-item">X</button></td>
-        `;
-        tbody.appendChild(newRow);
-        itemIndex++;
-    });
-
-    document.addEventListener("input", function (e) {
-        if (e.target.classList.contains("price") || e.target.classList.contains("qty")) {
-            const row = e.target.closest("tr");
-            const price = parseFloat(row.querySelector(".price").value) || 0;
-            const qty = parseInt(row.querySelector(".qty").value) || 0;
-            const total = price * qty;
-            row.querySelector(".item-total").textContent = total.toFixed(2);
-            updateGrandTotal();
-        }
-    });
-
-    document.addEventListener("click", function (e) {
-        if (e.target.classList.contains("remove-item")) {
-            e.target.closest("tr").remove();
-            updateGrandTotal();
-        }
-    });
-
-    function updateGrandTotal() {
-        let total = 0;
-        document.querySelectorAll(".item-total").forEach(cell => {
-            total += parseFloat(cell.textContent) || 0;
+        document.getElementById("addItem").addEventListener("click", function () {
+            const tbody = document.getElementById("itemsBody");
+            const newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                <td><input name="Items[${itemIndex}].Description" class="form-control" /></td>
+                <td><input name="Items[${itemIndex}].UnitPrice" type="number" step="0.01" class="form-control price" /></td>
+                <td><input name="Items[${itemIndex}].Quantity" type="number" class="form-control qty" /></td>
+                <td class="item-total">0.00</td>
+                <td><button type="button" class="btn btn-danger btn-sm remove-item">X</button></td>
+            `;
+            tbody.appendChild(newRow);
+            itemIndex++;
         });
-        document.getElementById("grandTotal").textContent = total.toFixed(2);
-    }
-</script>
+
+        document.addEventListener("input", function (e) {
+            if (e.target.classList.contains("price") || e.target.classList.contains("qty")) {
+                const row = e.target.closest("tr");
+                const price = parseFloat(row.querySelector(".price").value) || 0;
+                const qty = parseInt(row.querySelector(".qty").value) || 0;
+                const total = price * qty;
+                row.querySelector(".item-total").textContent = total.toFixed(2);
+                updateGrandTotal();
+            }
+        });
+
+        document.addEventListener("click", function (e) {
+            if (e.target.classList.contains("remove-item")) {
+                e.target.closest("tr").remove();
+                updateGrandTotal();
+            }
+        });
+
+        function updateGrandTotal() {
+            let total = 0;
+            document.querySelectorAll(".item-total").forEach(cell => {
+                total += parseFloat(cell.textContent) || 0;
+            });
+            document.getElementById("grandTotal").textContent = total.toFixed(2);
+        }
+    </script>
+}

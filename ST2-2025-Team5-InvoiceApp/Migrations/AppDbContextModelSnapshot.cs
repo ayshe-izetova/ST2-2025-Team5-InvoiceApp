@@ -22,7 +22,7 @@ namespace ST2_2025_Team5_InvoiceApp.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ST2_2025_Team5_InvoiceApp.Models.Invoice", b =>
+            modelBuilder.Entity("ST2_2025_Team5_InvoiceApp.Models.Client", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -32,18 +32,40 @@ namespace ST2_2025_Team5_InvoiceApp.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClientName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateOnly?>("DueDate")
-                        .HasColumnType("date");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Clients");
+                });
+
+            modelBuilder.Entity("ST2_2025_Team5_InvoiceApp.Models.Invoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("date");
 
                     b.Property<DateOnly?>("IssueDate")
                         .HasColumnType("date");
@@ -53,20 +75,18 @@ namespace ST2_2025_Team5_InvoiceApp.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClientId");
+
                     b.ToTable("Invoices");
                 });
 
-            modelBuilder.Entity("ST2_2025_Team5_InvoiceApp.Models.InvoiceItem", b =>
+            modelBuilder.Entity("ST2_2025_Team5_InvoiceApp.Models.InvoiceItems", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -95,7 +115,18 @@ namespace ST2_2025_Team5_InvoiceApp.Migrations
                     b.ToTable("InvoiceItems");
                 });
 
-            modelBuilder.Entity("ST2_2025_Team5_InvoiceApp.Models.InvoiceItem", b =>
+            modelBuilder.Entity("ST2_2025_Team5_InvoiceApp.Models.Invoice", b =>
+                {
+                    b.HasOne("ST2_2025_Team5_InvoiceApp.Models.Client", "Client")
+                        .WithMany("Invoices")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("ST2_2025_Team5_InvoiceApp.Models.InvoiceItems", b =>
                 {
                     b.HasOne("ST2_2025_Team5_InvoiceApp.Models.Invoice", "Invoice")
                         .WithMany("Items")
@@ -104,6 +135,11 @@ namespace ST2_2025_Team5_InvoiceApp.Migrations
                         .IsRequired();
 
                     b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("ST2_2025_Team5_InvoiceApp.Models.Client", b =>
+                {
+                    b.Navigation("Invoices");
                 });
 
             modelBuilder.Entity("ST2_2025_Team5_InvoiceApp.Models.Invoice", b =>

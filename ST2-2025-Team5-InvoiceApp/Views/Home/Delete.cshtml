@@ -15,8 +15,17 @@
             <dt class="col-sm-3">Invoice No:</dt>
             <dd class="col-sm-9">@Model.Number</dd>
 
-            <dt class="col-sm-3">Client:</dt>
+            <dt class="col-sm-3">Client Name:</dt>
             <dd class="col-sm-9">@Model.ClientName</dd>
+
+            <dt class="col-sm-3">Client Email:</dt>
+            <dd class="col-sm-9">@Model.ClientEmail</dd>
+
+            <dt class="col-sm-3">Client Phone:</dt>
+            <dd class="col-sm-9">@Model.ClientPhone</dd>
+
+            <dt class="col-sm-3">Client Address:</dt>
+            <dd class="col-sm-9">@Model.ClientAddress</dd>
 
             <dt class="col-sm-3">Status:</dt>
             <dd class="col-sm-9">@Model.Status</dd>
@@ -26,15 +35,6 @@
 
             <dt class="col-sm-3">Due Date:</dt>
             <dd class="col-sm-9">@Model.DueDate?.ToString("dd.MM.yyyy")</dd>
-
-            <dt class="col-sm-3">Email:</dt>
-            <dd class="col-sm-9">@Model.Email</dd>
-
-            <dt class="col-sm-3">Phone:</dt>
-            <dd class="col-sm-9">@Model.Phone</dd>
-
-            <dt class="col-sm-3">Address:</dt>
-            <dd class="col-sm-9">@Model.Address</dd>
         </dl>
     </div>
 </div>
@@ -77,6 +77,7 @@
 
 <div class="text-end">
     <form asp-action="Delete" method="post">
+        @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
         <button type="submit" class="btn btn-danger">Confirm Delete</button>
         <a asp-action="Index" class="btn btn-secondary">Cancel</a>

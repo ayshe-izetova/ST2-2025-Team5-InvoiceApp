@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,22 +18,27 @@ namespace ST2_2025_Team5_InvoiceApp.Models
         public DateOnly? IssueDate { get; set; }
         public DateOnly? DueDate { get; set; }
 
-        // Клиентски данни
-        [Required]
+        // ✅ Вградени клиентски полета (в самата фактура)
+        [Required, StringLength(100)]
         public string ClientName { get; set; } = "";
 
-        [EmailAddress]
-        public string Email { get; set; } = "";
+        [EmailAddress, StringLength(256)]
+        public string? ClientEmail { get; set; }   // по желание може и Required
 
-        [Phone]
-        public string Phone { get; set; } = "";
+        [Phone, StringLength(50)]
+        public string? ClientPhone { get; set; }
 
-        public string Address { get; set; } = "";
+        [StringLength(200)]
+        public string? ClientAddress { get; set; }
 
-        // 🧾 Връзка 1:N с InvoiceItems
+        // 🧾 1:N Items
         public ICollection<InvoiceItems> Items { get; set; } = new List<InvoiceItems>();
 
         [NotMapped]
         public decimal TotalPrice => Items.Sum(i => i.UnitPrice * i.Quantity);
+
+        // ❌ махаме старите
+        // public int? ClientId { get; set; }
+        // public Client? Client { get; set; }
     }
 }

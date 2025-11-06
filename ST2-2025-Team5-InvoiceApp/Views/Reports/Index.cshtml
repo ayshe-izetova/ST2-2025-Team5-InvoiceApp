@@ -1,0 +1,95 @@
+﻿@model List<ST2_2025_Team5_InvoiceApp.Models.Invoice>
+
+<h2 class="text-center mb-4">Invoice Report</h2>
+
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <p><strong>Total invoices:</strong> @ViewBag.TotalInvoices</p>
+        <p><strong>Paid:</strong> @ViewBag.PaidInvoices</p>
+        <p><strong>Pending:</strong> @ViewBag.PendingInvoices</p>
+        <p><strong>Total sum:</strong> @ViewBag.TotalSum лв</p>
+    </div>
+
+    <div class="text-end">
+        <a class="btn btn-outline-danger" asp-action="ExportToPdf">📄 Export to PDF</a>
+        <button id="btnAiSummary" class="btn btn-outline-info ms-2">🧠 Generate AI Summary</button>
+    </div>
+</div>
+
+<div id="aiSummary" class="alert alert-light border mt-3" style="display:none;"></div>
+
+<hr />
+
+<table class="table table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Invoice No</th>
+            <th>Client</th>
+            <th>Status</th>
+            <th>Issue Date</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var inv in Model)
+        {
+            <tr>
+                <td>@inv.Number</td>
+                <td>@inv.ClientName</td>
+                <td>@inv.Status</td>
+                <td>@inv.IssueDate?.ToString("dd.MM.yyyy")</td>
+                <td>@inv.Items.Sum(i => i.Quantity * i.UnitPrice).ToString("0.00")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h4 class="text-center mt-4">📈 Invoices per Month</h4>
+<canvas id="invoiceChart" style="max-height:400px"></canvas>
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // 🧠 AI Summary
+        document.getElementById("btnAiSummary").addEventListener("click", async () => {
+            const summaryDiv = document.getElementById("aiSummary");
+            summaryDiv.innerHTML = "⏳ Generating AI summary...";
+            summaryDiv.style.display = "block";
+
+            const response = await fetch("/Reports/GenerateSummary");
+            const data = await response.json();
+
+            summaryDiv.innerHTML = data.summary;
+        });
+
+        // 📊 Chart.js графика
+        async function loadChart() {
+            const res = await fetch("/Reports/GetMonthlyStats");
+            const stats = await res.json();
+
+            const ctx = document.getElementById("invoiceChart").getContext("2d");
+
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: stats.map(s => s.month),
+                    datasets: [{
+                        label: "Invoices",
+                        data: stats.map(s => s.count),
+                        borderWidth: 1,
+                        backgroundColor: "rgba(54, 162, 235, 0.6)"
+                    }]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        loadChart();
+    </script>
+}

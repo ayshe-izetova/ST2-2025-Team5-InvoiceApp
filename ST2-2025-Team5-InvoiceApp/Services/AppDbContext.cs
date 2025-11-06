@@ -11,5 +11,6 @@ namespace ST2_2025_Team5_InvoiceApp.Services
 
         public DbSet<Invoice> Invoices { get; set; } = null!;
         public DbSet<InvoiceItems> InvoiceItems { get; set; } = null!;
+
     }
 }
